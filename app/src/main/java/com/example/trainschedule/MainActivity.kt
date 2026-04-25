@@ -3,11 +3,14 @@ package com.example.trainschedule
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
+import android.widget.Spinner
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.coroutines.CoroutineScope
@@ -33,10 +36,8 @@ class MainActivity : AppCompatActivity() {
     private var allTrains: List<TrainRoute> = emptyList()
 
     private var isAdminLoggedIn = false
-
     private var isPriceAsc = true
     private var isTimeAsc = true
-
     private var selectedSearchDate: String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -177,41 +178,72 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showTrainDetailsDialog(train: TrainRoute) {
-        val message = """
-            Маршрут: ${train.startStation} → ${train.endStation}
-            Час відправлення: ${train.departureTime}
-            Дата: ${train.departureDate}
+        val dialogView = layoutInflater.inflate(R.layout.dialog_seat_selection, null)
+        val spinnerWagon = dialogView.findViewById<Spinner>(R.id.spinnerWagon)
+        val rvSeats = dialogView.findViewById<RecyclerView>(R.id.rvSeats)
+        val btnBuyTicket = dialogView.findViewById<Button>(R.id.btnBuyTicket)
 
-            Тип потяга: ${train.trainType}
-            Кількість вагонів: ${train.carriageCount}
+        val carriageCount = train.carriageCount ?: 10
+        val wagons = (1..carriageCount).map { "Вагон №$it" }
+        val spinnerAdapter =
+            ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, wagons)
+        spinnerWagon.adapter = spinnerAdapter
 
-            Вартість квитка: ${train.price} грн
-        """.trimIndent()
+        rvSeats.layoutManager = GridLayoutManager(this, 4)
 
-        androidx.appcompat.app.AlertDialog.Builder(this@MainActivity)
-            .setTitle("Деталі рейсу №${train.trainNumber}")
-            .setMessage(message)
-            .setPositiveButton("Купити квиток") { dialog, _ ->
-                Toast.makeText(this@MainActivity, "Перехід до оплати...", Toast.LENGTH_SHORT).show()
-                dialog.dismiss()
+        var currentSelectedSeat: Seat? = null
+
+        val seatAdapter = SeatAdapter(emptyList()) { seat ->
+            currentSelectedSeat = seat
+            if (seat != null) {
+                btnBuyTicket.isEnabled = true
+                btnBuyTicket.text = "ОПЛАТИТИ ${train.price} ₴"
+            } else {
+                btnBuyTicket.isEnabled = false
+                btnBuyTicket.text = "ОПЛАТИТИ"
             }
-            .setNegativeButton("Закрити") { dialog, _ ->
-                dialog.dismiss()
+        }
+        rvSeats.adapter = seatAdapter
+
+        spinnerWagon.onItemSelectedListener = object : android.widget.AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: android.widget.AdapterView<*>?, view: View?, position: Int, id: Long) {
+                val generatedSeats = (1..36).map {
+                    val status = if (Math.random() > 0.6) SeatStatus.OCCUPIED else SeatStatus.FREE
+                    Seat(it, status)
+                }
+                seatAdapter.updateSeats(generatedSeats)
+                btnBuyTicket.isEnabled = false
+                btnBuyTicket.text = "ОПЛАТИТИ"
             }
+            override fun onNothingSelected(parent: android.widget.AdapterView<*>?) {}
+        }
+
+        val dialog = androidx.appcompat.app.AlertDialog.Builder(this)
+            .setTitle("Рейс ${train.trainNumber}: ${train.startStation} → ${train.endStation}")
+            .setView(dialogView)
+            .setNegativeButton("Закрити", null)
             .show()
+
+        btnBuyTicket.setOnClickListener {
+            val selectedWagon = spinnerWagon.selectedItem.toString()
+            val seatNum = currentSelectedSeat?.number
+
+            Toast.makeText(this, "✅ Оплата успішна!\n$selectedWagon, Місце $seatNum", Toast.LENGTH_LONG).show()
+            dialog.dismiss()
+        }
     }
 
     private fun showAdminLoginDialog() {
-        val layout = android.widget.LinearLayout(this@MainActivity).apply {
+        val layout = android.widget.LinearLayout(this).apply {
             orientation = android.widget.LinearLayout.VERTICAL
             setPadding(50, 40, 50, 10)
         }
 
-        val loginInput = EditText(this@MainActivity).apply {
+        val loginInput = EditText(this).apply {
             hint = "Логін"
             inputType = android.text.InputType.TYPE_CLASS_TEXT
         }
-        val passwordInput = EditText(this@MainActivity).apply {
+        val passwordInput = EditText(this).apply {
             hint = "Пароль"
             inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD
         }
@@ -219,7 +251,7 @@ class MainActivity : AppCompatActivity() {
         layout.addView(loginInput)
         layout.addView(passwordInput)
 
-        androidx.appcompat.app.AlertDialog.Builder(this@MainActivity)
+        androidx.appcompat.app.AlertDialog.Builder(this)
             .setTitle("Авторизація персоналу")
             .setView(layout)
             .setPositiveButton("Увійти") { dialog, _ ->
@@ -235,9 +267,9 @@ class MainActivity : AppCompatActivity() {
                     trainAdapter.isStaffMode = true
                     trainAdapter.notifyDataSetChanged()
                     fabAddRoute.visibility = View.VISIBLE
-                    Toast.makeText(this@MainActivity, "Режим адміна: керування маршрутами активовано", Toast.LENGTH_LONG).show()
+                    Toast.makeText(this, "Режим адміна: керування маршрутами активовано", Toast.LENGTH_LONG).show()
                 } else {
-                    Toast.makeText(this@MainActivity, "Помилка: Невірний логін або пароль", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Помилка: Невірний логін або пароль", Toast.LENGTH_SHORT).show()
                 }
                 dialog.dismiss()
             }
@@ -248,7 +280,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun deleteRoute(train: TrainRoute) {
-        androidx.appcompat.app.AlertDialog.Builder(this@MainActivity)
+        androidx.appcompat.app.AlertDialog.Builder(this)
             .setTitle("Видалення маршруту")
             .setMessage("Ви впевнені, що хочете видалити рейс №${train.trainNumber}?")
             .setPositiveButton("Видалити") { _, _ ->
@@ -284,17 +316,17 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showAddRouteDialog() {
-        val layout = android.widget.LinearLayout(this@MainActivity).apply {
+        val layout = android.widget.LinearLayout(this).apply {
             orientation = android.widget.LinearLayout.VERTICAL
             setPadding(50, 40, 50, 10)
         }
 
-        val numInput = EditText(this@MainActivity).apply { hint = "Номер потяга" }
-        val fromInput = EditText(this@MainActivity).apply { hint = "Звідки" }
-        val toInput = EditText(this@MainActivity).apply { hint = "Куди" }
-        val timeInput = EditText(this@MainActivity).apply { hint = "Час (напр. 14:00)" }
+        val numInput = EditText(this).apply { hint = "Номер потяга" }
+        val fromInput = EditText(this).apply { hint = "Звідки" }
+        val toInput = EditText(this).apply { hint = "Куди" }
+        val timeInput = EditText(this).apply { hint = "Час (напр. 14:00)" }
 
-        val dateInput = EditText(this@MainActivity).apply {
+        val dateInput = EditText(this).apply {
             hint = "Оберіть дату"
             isFocusable = false
             isClickable = true
@@ -304,7 +336,7 @@ class MainActivity : AppCompatActivity() {
 
         dateInput.setOnClickListener {
             val calendar = java.util.Calendar.getInstance()
-            android.app.DatePickerDialog(this@MainActivity, { _, year, month, day ->
+            android.app.DatePickerDialog(this, { _, year, month, day ->
                 finalDate = String.format("%02d.%02d.%04d", day, month + 1, year)
                 dateInput.setText(finalDate)
             }, calendar.get(java.util.Calendar.YEAR), calendar.get(java.util.Calendar.MONTH), calendar.get(java.util.Calendar.DAY_OF_MONTH)).show()
@@ -316,7 +348,7 @@ class MainActivity : AppCompatActivity() {
         layout.addView(timeInput)
         layout.addView(dateInput)
 
-        androidx.appcompat.app.AlertDialog.Builder(this@MainActivity)
+        androidx.appcompat.app.AlertDialog.Builder(this)
             .setTitle("Додати новий маршрут")
             .setView(layout)
             .setPositiveButton("Зберегти") { dialog, _ ->
@@ -357,17 +389,17 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showEditRouteDialog(train: TrainRoute) {
-        val layout = android.widget.LinearLayout(this@MainActivity).apply {
+        val layout = android.widget.LinearLayout(this).apply {
             orientation = android.widget.LinearLayout.VERTICAL
             setPadding(50, 40, 50, 10)
         }
 
-        val numInput = EditText(this@MainActivity).apply { setText(train.trainNumber) }
-        val fromInput = EditText(this@MainActivity).apply { setText(train.startStation) }
-        val toInput = EditText(this@MainActivity).apply { setText(train.endStation) }
-        val timeInput = EditText(this@MainActivity).apply { setText(train.departureTime) }
+        val numInput = EditText(this).apply { setText(train.trainNumber) }
+        val fromInput = EditText(this).apply { setText(train.startStation) }
+        val toInput = EditText(this).apply { setText(train.endStation) }
+        val timeInput = EditText(this).apply { setText(train.departureTime) }
 
-        val dateInput = EditText(this@MainActivity).apply {
+        val dateInput = EditText(this).apply {
             setText(train.departureDate)
             isFocusable = false
             isClickable = true
@@ -378,13 +410,13 @@ class MainActivity : AppCompatActivity() {
         dateInput.setOnClickListener {
             val calendar = java.util.Calendar.getInstance()
             val (day, month, year) = parseDate(finalDate ?: "")
-            android.app.DatePickerDialog(this@MainActivity, { _, selectedYear, selectedMonth, selectedDay ->
+            android.app.DatePickerDialog(this, { _, selectedYear, selectedMonth, selectedDay ->
                 finalDate = String.format("%02d.%02d.%04d", selectedDay, selectedMonth + 1, selectedYear)
                 dateInput.setText(finalDate)
             }, year, month, day).show()
         }
 
-        val priceInput = EditText(this@MainActivity).apply { setText(train.price.toString()) }
+        val priceInput = EditText(this).apply { setText(train.price.toString()) }
 
         layout.addView(numInput)
         layout.addView(fromInput)
@@ -393,7 +425,7 @@ class MainActivity : AppCompatActivity() {
         layout.addView(dateInput)
         layout.addView(priceInput)
 
-        androidx.appcompat.app.AlertDialog.Builder(this@MainActivity)
+        androidx.appcompat.app.AlertDialog.Builder(this)
             .setTitle("Редагувати маршрут")
             .setView(layout)
             .setPositiveButton("Оновити") { dialog, _ ->
