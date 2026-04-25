@@ -185,12 +185,10 @@ class MainActivity : AppCompatActivity() {
 
         val carriageCount = train.carriageCount ?: 10
         val wagons = (1..carriageCount).map { "Вагон №$it" }
-        val spinnerAdapter =
-            ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, wagons)
+        val spinnerAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, wagons)
         spinnerWagon.adapter = spinnerAdapter
 
         rvSeats.layoutManager = GridLayoutManager(this, 4)
-
         var currentSelectedSeat: Seat? = null
 
         val seatAdapter = SeatAdapter(emptyList()) { seat ->
@@ -205,12 +203,18 @@ class MainActivity : AppCompatActivity() {
         }
         rvSeats.adapter = seatAdapter
 
+        val currentBookedSeats = train.bookedSeats ?: ""
+
         spinnerWagon.onItemSelectedListener = object : android.widget.AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: android.widget.AdapterView<*>?, view: View?, position: Int, id: Long) {
-                val generatedSeats = (1..36).map {
-                    val status = if (Math.random() > 0.6) SeatStatus.OCCUPIED else SeatStatus.FREE
-                    Seat(it, status)
+                val currentWagonNumber = position + 1
+
+                val generatedSeats = (1..36).map { seatNum ->
+                    val seatKey = "$currentWagonNumber-$seatNum"
+                    val status = if (currentBookedSeats.contains(seatKey)) SeatStatus.OCCUPIED else SeatStatus.FREE
+                    Seat(seatNum, status)
                 }
+
                 seatAdapter.updateSeats(generatedSeats)
                 btnBuyTicket.isEnabled = false
                 btnBuyTicket.text = "ОПЛАТИТИ"
@@ -225,11 +229,45 @@ class MainActivity : AppCompatActivity() {
             .show()
 
         btnBuyTicket.setOnClickListener {
-            val selectedWagon = spinnerWagon.selectedItem.toString()
+            val selectedWagonNum = spinnerWagon.selectedItemPosition + 1
             val seatNum = currentSelectedSeat?.number
+            val newSeatKey = "$selectedWagonNum-$seatNum"
 
-            Toast.makeText(this, "✅ Оплата успішна!\n$selectedWagon, Місце $seatNum", Toast.LENGTH_LONG).show()
-            dialog.dismiss()
+            val updatedBookedSeats = if (currentBookedSeats.isEmpty()) {
+                newSeatKey
+            } else {
+                "$currentBookedSeats,$newSeatKey"
+            }
+
+            val updatedTrain = train.copy(bookedSeats = updatedBookedSeats)
+
+            btnBuyTicket.isEnabled = false
+            btnBuyTicket.text = "ОБРОБКА..."
+
+            CoroutineScope(Dispatchers.IO).launch {
+                try {
+                    val resultTrain = RetrofitClient.apiService.updateTrain(train.id!!, updatedTrain)
+
+                    withContext(Dispatchers.Main) {
+                        val index = allTrains.indexOfFirst { it.id == train.id }
+                        if (index != -1) {
+                            val mutableList = allTrains.toMutableList()
+                            mutableList[index] = resultTrain
+                            allTrains = mutableList
+                            trainAdapter.updateData(allTrains)
+                        }
+
+                        Toast.makeText(this@MainActivity, "✅ Оплата успішна!\nВагон $selectedWagonNum, Місце $seatNum", Toast.LENGTH_LONG).show()
+                        dialog.dismiss()
+                    }
+                } catch (e: Exception) {
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(this@MainActivity, "Помилка зв'язку з сервером!", Toast.LENGTH_SHORT).show()
+                        btnBuyTicket.isEnabled = true
+                        btnBuyTicket.text = "ОПЛАТИТИ ${train.price} ₴"
+                    }
+                }
+            }
         }
     }
 
@@ -362,7 +400,8 @@ class MainActivity : AppCompatActivity() {
                     price = 500.0,
                     trainType = "Пасажирський",
                     carriageCount = 10,
-                    status = "OpenForBooking"
+                    status = "OpenForBooking",
+                    bookedSeats = ""
                 )
 
                 CoroutineScope(Dispatchers.IO).launch {

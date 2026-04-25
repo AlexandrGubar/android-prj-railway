@@ -13,5 +13,6 @@ data class TrainRoute(
     @SerializedName("trainType") val trainType: String,
     @SerializedName("carriageCount") val carriageCount: Int?,
     @SerializedName("departureDate") val departureDate: String?,
-    @SerializedName("status") val status: String?
+    @SerializedName("status") val status: String?,
+    @SerializedName("bookedSeats") val bookedSeats: String?
 )
