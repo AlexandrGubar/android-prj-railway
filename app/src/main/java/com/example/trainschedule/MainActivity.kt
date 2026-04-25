@@ -72,7 +72,14 @@ class MainActivity : AppCompatActivity() {
 
             android.app.DatePickerDialog(this, { _, selectedYear, selectedMonth, selectedDay ->
                 selectedSearchDate = String.format("%02d.%02d.%04d", selectedDay, selectedMonth + 1, selectedYear)
-                btnSelectDate.text = "Дата: $selectedSearchDate"
+                btnSelectDate.text = selectedSearchDate
+
+                btnSelectDate.setBackgroundColor(android.graphics.Color.parseColor("#EDE7F6"))
+                btnSelectDate.setTextColor(android.graphics.Color.parseColor("#5E35B1"))
+                (btnSelectDate as com.google.android.material.button.MaterialButton).apply {
+                    strokeWidth = 0
+                    iconTint = android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#5E35B1"))
+                }
             }, year, month, day).show()
         }
 
@@ -254,7 +261,20 @@ class MainActivity : AppCompatActivity() {
                             val mutableList = allTrains.toMutableList()
                             mutableList[index] = resultTrain
                             allTrains = mutableList
-                            trainAdapter.updateData(allTrains)
+
+                            val dep = etDeparture.text.toString().trim()
+                            val arr = etArrival.text.toString().trim()
+
+                            if (dep.isNotEmpty() && arr.isNotEmpty() && selectedSearchDate.isNotEmpty() && !isAdminLoggedIn) {
+                                val filteredList = allTrains.filter { t ->
+                                    t.startStation.equals(dep, ignoreCase = true) &&
+                                            t.endStation.equals(arr, ignoreCase = true) &&
+                                            t.departureDate == selectedSearchDate
+                                }
+                                trainAdapter.updateData(filteredList)
+                            } else {
+                                trainAdapter.updateData(allTrains)
+                            }
                         }
 
                         Toast.makeText(this@MainActivity, "✅ Оплата успішна!\nВагон $selectedWagonNum, Місце $seatNum", Toast.LENGTH_LONG).show()

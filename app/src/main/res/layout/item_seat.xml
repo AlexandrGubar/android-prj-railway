@@ -3,16 +3,16 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="4dp">
+    android:layout_margin="6dp">
 
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/cardSeat"
         android:layout_width="match_parent"
-        android:layout_height="50dp"
-        app:cardCornerRadius="8dp"
-        app:cardElevation="2dp"
-        app:strokeWidth="1dp"
-        app:strokeColor="#BDBDBD">
+        android:layout_height="54dp"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="0dp"
+        app:strokeWidth="1.5dp"
+        app:strokeColor="#E5E5EA">
 
         <TextView
             android:id="@+id/tvSeatNumber"
@@ -20,8 +20,7 @@
             android:layout_height="match_parent"
             android:gravity="center"
             android:text="1"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:textColor="#333333" />
+            android:textSize="14sp"
+            android:textColor="#8E8E93" />
     </com.google.android.material.card.MaterialCardView>
 </FrameLayout>

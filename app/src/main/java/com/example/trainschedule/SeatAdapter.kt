@@ -8,7 +8,6 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.card.MaterialCardView
 
-// Стани місця
 enum class SeatStatus { FREE, OCCUPIED, SELECTED }
 data class Seat(val number: Int, var status: SeatStatus)
 
@@ -33,45 +32,40 @@ class SeatAdapter(
         val seat = seats[position]
         holder.tvSeatNumber.text = seat.number.toString()
 
-        // Фарбуємо квадратики залежно від статусу
         when (seat.status) {
             SeatStatus.FREE -> {
-                holder.cardSeat.setCardBackgroundColor(Color.parseColor("#E8F5E9")) // Світло-зелений
-                holder.cardSeat.strokeColor = Color.parseColor("#4CAF50")
-                holder.tvSeatNumber.setTextColor(Color.parseColor("#1B5E20"))
+                holder.cardSeat.setCardBackgroundColor(Color.WHITE)
+                holder.cardSeat.strokeColor = Color.parseColor("#E5E5EA")
+                holder.tvSeatNumber.setTextColor(Color.parseColor("#1C1C1E"))
             }
             SeatStatus.OCCUPIED -> {
-                holder.cardSeat.setCardBackgroundColor(Color.parseColor("#FFEBEE")) // Світло-червоний
-                holder.cardSeat.strokeColor = Color.parseColor("#EF5350")
-                holder.tvSeatNumber.setTextColor(Color.parseColor("#D32F2F"))
+                holder.cardSeat.setCardBackgroundColor(Color.parseColor("#F2F2F7"))
+                holder.cardSeat.strokeColor = Color.TRANSPARENT
+                holder.tvSeatNumber.setTextColor(Color.parseColor("#D1D1D6"))
             }
             SeatStatus.SELECTED -> {
-                holder.cardSeat.setCardBackgroundColor(Color.parseColor("#2196F3")) // Синій
-                holder.cardSeat.strokeColor = Color.parseColor("#0D47A1")
+                holder.cardSeat.setCardBackgroundColor(Color.parseColor("#5E35B1"))
+                holder.cardSeat.strokeColor = Color.parseColor("#5E35B1")
                 holder.tvSeatNumber.setTextColor(Color.WHITE)
             }
         }
 
-        // Обробка кліку
         holder.itemView.setOnClickListener {
-            if (seat.status == SeatStatus.OCCUPIED) return@setOnClickListener // Зайняте не клікається
+            if (seat.status == SeatStatus.OCCUPIED) return@setOnClickListener
 
-            // Якщо клікнули на вже обране - знімаємо вибір
             if (seat.status == SeatStatus.SELECTED) {
                 seat.status = SeatStatus.FREE
                 selectedSeatIndex = -1
                 onSeatSelected(null)
             } else {
-                // Знімаємо вибір з попереднього місця (щоб можна було обрати лише одне)
                 if (selectedSeatIndex != -1) {
                     seats[selectedSeatIndex].status = SeatStatus.FREE
                 }
-                // Обираємо нове
                 seat.status = SeatStatus.SELECTED
                 selectedSeatIndex = position
                 onSeatSelected(seat)
             }
-            notifyDataSetChanged() // Оновлюємо сітку
+            notifyDataSetChanged()
         }
     }
 
@@ -79,7 +73,7 @@ class SeatAdapter(
 
     fun updateSeats(newSeats: List<Seat>) {
         seats = newSeats
-        selectedSeatIndex = -1 // Скидаємо вибір при зміні вагона
+        selectedSeatIndex = -1
         notifyDataSetChanged()
     }
 }

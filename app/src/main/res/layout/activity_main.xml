@@ -4,131 +4,128 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#F3F4F6">
+    android:background="#F5F5F7"> <androidx.cardview.widget.CardView
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="16dp"
+    app:cardCornerRadius="24dp"
+    app:cardElevation="8dp"
+    app:cardBackgroundColor="#FFFFFF">
 
-    <TextView
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="16dp"
-        android:text="Укрзалізниця: Пошук"
-        android:textAlignment="center"
-        android:textColor="#6200EE"
-        android:textSize="24sp"
-        android:textStyle="bold" />
-
-    <androidx.cardview.widget.CardView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="16dp"
-        android:layout_marginBottom="16dp"
-        app:cardCornerRadius="12dp"
-        app:cardElevation="4dp">
+        android:orientation="vertical"
+        android:padding="20dp">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="16dp">
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="16dp">
 
-            <LinearLayout
-                android:layout_width="match_parent"
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:layout_marginBottom="12dp">
+                android:layout_weight="1"
+                app:boxCornerRadiusTopStart="12dp"
+                app:boxCornerRadiusBottomStart="12dp"
+                android:hint="Звідки">
 
-                <com.google.android.material.textfield.TextInputLayout
-                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                    android:layout_width="0dp"
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etDeparture"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:hint="Звідки"
-                    app:boxCornerRadiusTopStart="12dp"
-                    app:boxCornerRadiusBottomStart="12dp">
+                    android:inputType="textCapWords" />
+            </com.google.android.material.textfield.TextInputLayout>
 
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/etDeparture"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:inputType="textCapWords" />
-                </com.google.android.material.textfield.TextInputLayout>
+            <ImageButton
+                android:id="@+id/btnSwap"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginHorizontal="4dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@android:drawable/ic_popup_sync"
+                app:tint="#5E35B1" />
 
-                <ImageButton
-                    android:id="@+id/btnSwap"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:layout_marginHorizontal="4dp"
-                    android:background="?attr/selectableItemBackgroundBorderless"
-                    android:src="@android:drawable/ic_popup_sync"
-                    app:tint="#6200EE" />
-
-                <com.google.android.material.textfield.TextInputLayout
-                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:hint="Куди"
-                    app:boxCornerRadiusTopEnd="12dp"
-                    app:boxCornerRadiusBottomEnd="12dp">
-
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/etArrival"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:inputType="textCapWords" />
-                </com.google.android.material.textfield.TextInputLayout>
-            </LinearLayout>
-
-            <Button
-                android:id="@+id/btnSelectDate"
-                android:layout_width="match_parent"
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                android:text="ОБРАТИ ДАТУ"
-                android:textColor="#6200EE" />
+                android:layout_weight="1"
+                app:boxCornerRadiusTopEnd="12dp"
+                app:boxCornerRadiusBottomEnd="12dp"
+                android:hint="Куди">
 
-            <Button
-                android:id="@+id/btnSearch"
-                android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:text="ЗНАЙТИ ПОТЯГ"
-                android:textSize="16sp"
-                android:textStyle="bold"/>
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etArrival"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="textCapWords" />
+            </com.google.android.material.textfield.TextInputLayout>
         </LinearLayout>
-    </androidx.cardview.widget.CardView>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnSelectDate"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginBottom="16dp"
+            app:cornerRadius="12dp"
+            app:strokeColor="#E0E0E0"
+            android:textColor="#757575"
+            app:icon="@android:drawable/ic_menu_today"
+            app:iconTint="#757575"
+            app:iconGravity="textStart"
+            android:text="ОБРАТИ ДАТУ" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnSearch"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            app:cornerRadius="16dp"
+            app:backgroundTint="#5E35B1"
+            android:textColor="#FFFFFF"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:text="ЗНАЙТИ ПОТЯГ" />
+    </LinearLayout>
+</androidx.cardview.widget.CardView>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:paddingHorizontal="16dp"
+        android:paddingHorizontal="20dp"
         android:paddingBottom="8dp"
         android:gravity="center_vertical">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Сортувати:"
-            android:textSize="12sp"
-            android:layout_marginEnd="8dp"/>
+            android:text="Сортувати за:"
+            android:textColor="#8E8E93"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:layout_marginEnd="12dp"/>
 
-        <Button
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnSortPrice"
-            style="?android:attr/buttonStyleSmall"
-            android:layout_width="0dp"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Ціна ↑↓"
-            android:textSize="10sp" />
+            android:textColor="#5E35B1"
+            android:text="ЦІНОЮ ↑↓" />
 
-        <Button
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnSortTime"
-            style="?android:attr/buttonStyleSmall"
-            android:layout_width="0dp"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Час ↑↓"
-            android:textSize="10sp" />
+            android:textColor="#5E35B1"
+            android:text="ЧАСОМ ↑↓" />
     </LinearLayout>
 
     <FrameLayout
@@ -141,7 +138,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:clipToPadding="false"
-            android:paddingBottom="16dp" />
+            android:paddingBottom="80dp" />
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/fabAddRoute"
@@ -152,7 +149,7 @@
             android:src="@android:drawable/ic_input_add"
             android:visibility="gone"
             app:tint="#FFFFFF"
-            android:backgroundTint="#6200EE" />
+            app:backgroundTint="#5E35B1" />
     </FrameLayout>
 
     <Button
@@ -161,8 +158,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
+        android:layout_marginBottom="8dp"
         android:text="ВХІД ДЛЯ ПЕРСОНАЛУ"
-        android:textColor="#8E8E93"
+        android:textColor="#BDBDBD"
         android:textSize="12sp" />
 
 </LinearLayout>
